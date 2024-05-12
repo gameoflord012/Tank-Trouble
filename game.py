@@ -38,7 +38,7 @@ class Game:
             Mazefolder = path.join(folder_of_game, 'MAZEFOLDER')
             sound_folder = path.join(folder_of_game, 'snd')
             self.maze = []
-            i = random.randint(1, 5)
+            i = 1
             with open(path.join(Mazefolder, 'MAZE{}.txt'.format(i)), 'rt') as f:
                 for line in f:
                     self.maze.append(line)
