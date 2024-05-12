@@ -1,13 +1,27 @@
+HOST = 'localhost'  # Replace with server's hostname or IP address
+PORT = 65432
+
+import socket
 import pygame
+import threading
+import pickle
+
 from PrimarySettings import *
 from sprites import *
 from os import path
 import random
 
 
+def arrays_equal(arr1, arr2):
+  """Checks if all elements in two boolean arrays are equal."""
+  # Ensure arrays have the same length, otherwise they can't be equal
+  if len(arr1) != len(arr2):
+    return False
+  # Use zip to iterate through corresponding elements and check for equality
+  return all(a == b for a, b in zip(arr1, arr2))
+
 
 class Game:
-
     def __init__(self):
         pygame.init()  # initialize all imported pygame modules
         pygame.mixer.init()
@@ -71,8 +85,6 @@ class Game:
             self.SCORE2 = 0
             self.SCORE1 = 0
 
-
-
     def grid(self):
         for x in range(0, WIDTH, SQSIZE):
             pygame.draw.line(self.screen, WHITE, (x, 0), (x, HEIGHT))
@@ -85,7 +97,15 @@ class Game:
                 self.quit()
 
     def update(self):
-        # keep track changing
+        # send keys data to server
+
+        new_key_state = pygame.key.get_pressed()
+
+        if(not arrays_equal(self.player.last_key_state, new_key_state)):
+            
+            key_states = [new_key_state, []]
+            g_socket.send(pickle.dumps(key_states))
+
         self.all_sprites.update()
         self.hit()
 
@@ -144,7 +164,6 @@ class Game:
         pygame.display.flip()
         self.wait_for_key()
 
-
     def wait_for_key(self):
         pygame.event.wait()
         waiting = True
@@ -158,11 +177,31 @@ class Game:
                     self.Score = True
                     waiting = False
 
+def handle_server():
+    while True:
+        data = g_socket.recv(1024)
+        if not data:
+            print(f"Server closed")
+            break
 
+        key_states = pickle.loads(data)
+        print(f"Received from server")
 
-# create game objects
-g = Game()
-while True:
-    g.new()
-    g.run()
+        # receive key states from server
+
+        g_game.player.key_state_stack.append(key_states[0])
+        g_game.enemy.key_state_stack.append(key_states[1])        
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as g_socket:
+    g_socket.connect((HOST, PORT))
+
+    thread = threading.Thread(target=handle_server)
+    thread.start()
+
+    global g_game
+
+    g_game = Game()
+    g_game.new()
+    g_game.run()
+
 
