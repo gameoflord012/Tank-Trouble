@@ -1,4 +1,4 @@
-HOST = 'localhost'  # Replace with server's hostname or IP address
+HOST = '192.168.102.18'  # Replace with server's hostname or IP address
 PORT = 65432
 
 import socket
@@ -97,8 +97,8 @@ class Game:
                 self.quit()
 
     def update(self):
-        # send keys data to server
 
+        # send keys data to server
         new_key_state = pygame.key.get_pressed()
 
         if(not arrays_equal(self.player.last_key_state, new_key_state)):
@@ -184,7 +184,11 @@ def handle_server():
             print(f"Server closed")
             break
 
-        key_states = pickle.loads(data)
+        try:
+            key_states = pickle.loads(data)
+        except pickle.UnpicklingError:
+            continue
+    
         print(f"Received from server")
 
         # receive key states from server

@@ -3,8 +3,9 @@ import threading
 import pickle
 
 #server
-HOST = 'localhost'
+HOST = '192.168.102.18'
 PORT = 65432
+MAX_PLAYERS = 2
 
 threads = []
 clients_cnn = []
@@ -21,7 +22,7 @@ def start_server():
 def accept_players():
     global threads
 
-    for i in range(1):
+    for i in range(MAX_PLAYERS):
         conn, addr = g_socket.accept()
         clients_cnn.append(conn)
         print(f'You are player {addr}')
