@@ -196,15 +196,15 @@ class Enemy(pygame.sprite.Sprite):
         self.rotation_speed = 0
         self.vel = vector(0, 0)
 
-        if key_state[pygame.K_a]:
+        if key_state[pygame.K_LEFT]:
             self.rotation_speed = +RotationSpeedOfEnemy
-        if key_state[pygame.K_d]:
+        if key_state[pygame.K_RIGHT]:
             self.rotation_speed = -RotationSpeedOfEnemy
-        if key_state[pygame.K_w]:
+        if key_state[pygame.K_UP]:
             self.vel = vector(0, enemySpeed).rotate(-self.rot)
-        if key_state[pygame.K_s]:
+        if key_state[pygame.K_DOWN]:
             self.vel = vector(0, -enemySpeed/2).rotate(-self.rot)
-        if key_state[pygame.K_q]:
+        if key_state[pygame.K_m]:
             now = pygame.time.get_ticks()
             if now - self.last_fire > bullet_rate:
                 self.last_fire = now
