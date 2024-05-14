@@ -54,10 +54,10 @@ def handle_client(conn, addr):
         player_index = clients_cnn.index(conn)
 
         # send self
-        conn.sendall(pickle.dumps([player_index, None]))
+        conn.sendall(pickle.dumps([player_index, None, None]))
 
         # send to other player
         if(len(clients_cnn) == 2):
-            clients_cnn[1 - player_index].sendall(pickle.dumps([1 - player_index, data]))
+            clients_cnn[1 - player_index].sendall(pickle.dumps([1 - player_index, data[0], data[1]]))
 
 start_server()

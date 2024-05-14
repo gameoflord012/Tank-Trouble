@@ -95,12 +95,12 @@ class Game:
 
         if player_id == 0:
             self.player.last_key_state = new_key_state
-            g_socket.send(pickle.dumps(self.player.position))
+            g_socket.send(pickle.dumps([self.player.position, self.player.rot]))
 
 
         if player_id == 1:
             self.enemy.last_key_state = new_key_state
-            g_socket.send(pickle.dumps(self.enemy.position))
+            g_socket.send(pickle.dumps([self.enemy.position, self.enemy.rot]))
 
         self.all_sprites.update()
         self.hit()
@@ -178,7 +178,7 @@ def handle_server():
         global player_id
 
         if player_id == -1:
-            g_socket.send(pickle.dumps(None))
+            g_socket.send(pickle.dumps([None, None]))
             print("Waiting for player id")
 
         byte_data = g_socket.recv(1024)
@@ -200,11 +200,17 @@ def handle_server():
         if g_game == None:
             continue
 
-        if player_id == 0 and data[1] != None:
-            g_game.enemy.position = data[1]
+        if player_id == 0:
+            if data[1] != None:
+                g_game.enemy.position = data[1]
+            if data[2] != None:
+                g_game.enemy.rot = data[2]
         
-        if player_id == 1 and data[1] != None:
-            g_game.player.position = data[1]
+        if player_id == 1:
+            if data[1] != None:
+                g_game.player.position = data[1]
+            if data[2] != None:
+                g_game.player.rot = data[2]
 
 
         print(f"Received key states from server")
