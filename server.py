@@ -3,7 +3,7 @@ import threading
 import pickle
 
 #server
-HOST = '192.168.102.18'
+HOST = '0.0.0.0'
 PORT = 65432
 MAX_PLAYERS = 2
 

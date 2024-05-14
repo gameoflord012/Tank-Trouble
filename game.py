@@ -1,4 +1,4 @@
-HOST = '192.168.102.18'  # Replace with server's hostname or IP address
+HOST = '192.168.1.255'  # Replace with server's hostname or IP address
 PORT = 65432
 
 import socket
@@ -19,7 +19,6 @@ def arrays_equal(arr1, arr2):
     return False
   # Use zip to iterate through corresponding elements and check for equality
   return all(a == b for a, b in zip(arr1, arr2))
-
 
 class Game:
     def __init__(self):
