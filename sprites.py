@@ -131,24 +131,25 @@ class Bullet(pygame.sprite.Sprite):
         self.position += self.vel * self.game.changing_time
         self.rect.center = self.position  # update our rectangle to that location
         if pygame.sprite.spritecollide(self, self.game.walls, False):
-            if self.vel.y > 0 and self.vel.x == 0:
-                self.vel *= -1
-            elif self.vel.y < 0 and self.vel.x == 0:
-                self.vel *= -1
-            elif self.vel.x > 0 and self.vel.y == 0:
-                self.vel *= -1
-            elif self.vel.x < 0 and self.vel.y == 0:
-                self.vel *= -1
-            elif self.vel.x > 0 and self.vel.y < 0:
-                self.vel.x = -self.vel.x
-            elif self.vel.x < 0 and self.vel.y < 0:
-                self.vel.y = -self.vel.y
-            elif self.vel.x < 0 and self.vel.y > 0:
-                self.vel.x = -self.vel.x
-            elif self.vel.x > 0 and self.vel.y > 0:
-                self.vel.y = -self.vel.y
-        if pygame.time.get_ticks() - self.product_bullet_time > Bullet_life_time:
             self.kill()
+        #     if self.vel.y > 0 and self.vel.x == 0:
+        #         self.vel *= -1
+        #     elif self.vel.y < 0 and self.vel.x == 0:
+        #         self.vel *= -1
+        #     elif self.vel.x > 0 and self.vel.y == 0:
+        #         self.vel *= -1
+        #     elif self.vel.x < 0 and self.vel.y == 0:
+        #         self.vel *= -1
+        #     elif self.vel.x > 0 and self.vel.y < 0:
+        #         self.vel.x = -self.vel.x
+        #     elif self.vel.x < 0 and self.vel.y < 0:
+        #         self.vel.y = -self.vel.y
+        #     elif self.vel.x < 0 and self.vel.y > 0:
+        #         self.vel.x = -self.vel.x
+        #     elif self.vel.x > 0 and self.vel.y > 0:
+        #         self.vel.y = -self.vel.y
+        # if pygame.time.get_ticks() - self.product_bullet_time > Bullet_life_time:
+        #     self.kill()
 # ---------------------------------------------------------------------------------------------------------------------
 
 
