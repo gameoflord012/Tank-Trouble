@@ -192,7 +192,7 @@ def handle_server():
         # receive key states from server
 
         g_game.player.last_key_state = key_states[0]
-        g_game.player.last_key_state = key_states[1]        
+        g_game.enemy.last_key_state = key_states[1]        
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as g_socket:
     g_socket.connect((HOST, PORT))
