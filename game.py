@@ -11,14 +11,6 @@ from sprites import *
 from os import path
 import random
 
-def arrays_equal(arr1, arr2):
-  """Checks if all elements in two boolean arrays are equal."""
-  # Ensure arrays have the same length, otherwise they can't be equal
-  if len(arr1) != len(arr2):
-    return False
-  # Use zip to iterate through corresponding elements and check for equality
-  return all(a == b for a, b in zip(arr1, arr2))
-
 class Game:
     def __init__(self):
         pygame.init()  # initialize all imported pygame modules
@@ -101,11 +93,14 @@ class Game:
 
         global player_id
 
-        if  player_id == 0 and not arrays_equal(self.player.last_key_state, new_key_state) or \
-            player_id == 1 and not arrays_equal(self.enemy.last_key_state, new_key_state):
+        if player_id == 0:
+            self.player.last_key_state = new_key_state
+            g_socket.send(pickle.dumps(self.player.position))
 
-            key_states = [new_key_state, None] 
-            g_socket.send(pickle.dumps(key_states))
+
+        if player_id == 1:
+            self.enemy.last_key_state = new_key_state
+            g_socket.send(pickle.dumps(self.enemy.position))
 
         self.all_sprites.update()
         self.hit()
@@ -182,35 +177,35 @@ def handle_server():
     while True:
         global player_id
 
-        
         if player_id == -1:
-            g_socket.send(pickle.dumps([None, None]))
+            g_socket.send(pickle.dumps([None]))
             print("Waiting for player id")
 
-        data = g_socket.recv(1024)
-        if not data:
+        byte_data = g_socket.recv(1024)
+        if not byte_data:
             print(f"Server closed")
             break
 
         try:
-            key_states = pickle.loads(data)
+            data = pickle.loads(byte_data)
         except pickle.UnpicklingError:
             continue
     
         if player_id == -1:
-            player_id = key_states[2]    
+            player_id = data[0] 
             print(f"Player id: {player_id}")
             continue
 
-        # receive key states from server
+        # do nothing if game is not initialized
         if g_game == None:
             continue
 
-        if key_states[0] != None:
-            g_game.player.last_key_state = key_states[0]
+        if player_id == 0 and data[1] != None:
+            g_game.enemy.position = data[1]
+        
+        if player_id == 1 and data[1] != None:
+            g_game.player.position = data[1]
 
-        if key_states[1] != None: 
-            g_game.enemy.last_key_state = key_states[1]
 
         print(f"Received key states from server")
 

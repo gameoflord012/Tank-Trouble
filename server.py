@@ -38,30 +38,26 @@ def accept_players():
 
 def handle_client(conn, addr):
     while True:
-        data = conn.recv(1024)
-        if not data:
+        byte_data = conn.recv(1024)
+        if not byte_data:
             print(f"Connection {addr} closed")
             break
 
         try:
-            key_states = pickle.loads(data)
+            data = pickle.loads(byte_data)
         except pickle.UnpicklingError:
+            print(f"Error unpickling data from {addr}")
             continue
         
         print(f"Data received from {addr}")
 
         player_index = clients_cnn.index(conn)
 
-        if(player_index == 1):
-            key_states[0], key_states[1] = key_states[1], key_states[0]
-
-        key_states.append(player_index)
-
-        # send back to sender 
-        conn.sendall(pickle.dumps(key_states))
+        # send self
+        conn.sendall(pickle.dumps([player_index, None]))
 
         # send to other player
         if(len(clients_cnn) == 2):
-            clients_cnn[1 - player_index].sendall(pickle.dumps(key_states))
+            clients_cnn[1 - player_index].sendall(pickle.dumps([1 - player_index, data]))
 
 start_server()
