@@ -178,7 +178,7 @@ def handle_server():
         global player_id
 
         if player_id == -1:
-            g_socket.send(pickle.dumps([None]))
+            g_socket.send(pickle.dumps(None))
             print("Waiting for player id")
 
         byte_data = g_socket.recv(1024)
