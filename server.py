@@ -50,14 +50,16 @@ def handle_client(conn, addr):
         
         print(f"Data received from {addr}")
 
+        player_index = clients_cnn.index(conn)
+
+        if(player_index == 1):
+            key_states[0], key_states[1] = key_states[1], key_states[0]
+
         # send back to sender 
         conn.sendall(pickle.dumps(key_states))
 
-        if(len(clients_cnn) < 2):
-            continue
-
         # send to other player
-        key_states[0], key_states[1] = key_states[1], key_states[0]
-        clients_cnn[1 - clients_cnn.index(conn)].sendall(pickle.dumps(key_states))
+        if(len(clients_cnn) == 2):
+            clients_cnn[1 - player_index].sendall(pickle.dumps(key_states))
 
 start_server()

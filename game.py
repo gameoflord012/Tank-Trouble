@@ -1,4 +1,4 @@
-HOST = '192.168.1.255'  # Replace with server's hostname or IP address
+HOST = '192.168.1.13'  # Replace with server's hostname or IP address
 PORT = 65432
 
 import socket
@@ -10,7 +10,6 @@ from PrimarySettings import *
 from sprites import *
 from os import path
 import random
-
 
 def arrays_equal(arr1, arr2):
   """Checks if all elements in two boolean arrays are equal."""
