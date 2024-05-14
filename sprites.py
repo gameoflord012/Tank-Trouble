@@ -18,19 +18,16 @@ class Player(pygame.sprite.Sprite):
         self.rot = 0  # degree
         self.last_fire = 0
         self.last_key_state = []
-        self.key_state_stack = []
         self.rotation_speed = 0
 
     def update_key_state(self):
-        if(len(self.key_state_stack) == 0):
-            return
-        
-        key_state = self.key_state_stack.pop()
-        if(len(key_state) == 0):
-            return
+        key_state = self.last_key_state
 
         self.rotation_speed = 0
         self.vel = vector(0, 0)
+
+        if len(key_state) == 0:
+            return
 
         if key_state[pygame.K_LEFT]:
             self.rotation_speed = +RotationSpeedOfPlayer
@@ -182,19 +179,16 @@ class Enemy(pygame.sprite.Sprite):
         self.rot = 0  # degree
         self.last_fire = 0
         self.rotation_speed = 0
-        self.key_state_stack = []
         self.last_key_state = []
 
     def update_key_state(self):
-        if(len(self.key_state_stack) == 0):
-            return
-        
-        key_state = self.key_state_stack.pop()
-        if(len(key_state) == 0):
-            return
+        key_state = self.last_key_state
 
         self.rotation_speed = 0
         self.vel = vector(0, 0)
+
+        if len(key_state) == 0:
+            return
 
         if key_state[pygame.K_LEFT]:
             self.rotation_speed = +RotationSpeedOfEnemy
@@ -212,8 +206,6 @@ class Enemy(pygame.sprite.Sprite):
                 position = self.position + turret.rotate(-self.rot)
                 Bullet(self.game, position, direction)
                 self.game.shoot_sound.play()
-
-        self.last_key_state = key_state
 
     def collide_with_walls(self, direction):
 
