@@ -206,7 +206,7 @@ def handle_server():
             if data[2] != None:
                 g_game.enemy.rot = data[2]
             if data[3] != None:
-                g_game.player.last_key_state[pygame.K_m] = data[3]
+                g_game.enemy.last_key_state[pygame.K_m] = data[3]
 
         
         if player_id == 1:

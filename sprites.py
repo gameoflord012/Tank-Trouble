@@ -17,7 +17,7 @@ class Player(pygame.sprite.Sprite):
         self.position = vector(x, y) * SQSIZE
         self.rot = 0  # degree
         self.last_fire = 0
-        self.last_key_state = []
+        self.last_key_state = pygame.key.get_pressed()
         self.rotation_speed = 0
 
     def update_key_state(self):
@@ -179,7 +179,7 @@ class Enemy(pygame.sprite.Sprite):
         self.rot = 0  # degree
         self.last_fire = 0
         self.rotation_speed = 0
-        self.last_key_state = []
+        self.last_key_state = pygame.key.get_pressed()
 
     def update_key_state(self):
         key_state = self.last_key_state
