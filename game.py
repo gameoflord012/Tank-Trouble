@@ -101,7 +101,7 @@ class Game:
 
         if(not arrays_equal(self.player.last_key_state, new_key_state)):
             
-            key_states = [new_key_state, []]
+            key_states = [new_key_state, None]
             g_socket.send(pickle.dumps(key_states))
 
         self.all_sprites.update()
@@ -191,8 +191,11 @@ def handle_server():
 
         # receive key states from server
 
-        g_game.player.last_key_state = key_states[0]
-        g_game.enemy.last_key_state = key_states[1]        
+        if key_states[0] != None:
+            g_game.player.last_key_state = key_states[0]
+
+        if key_states[1] != None: 
+            g_game.enemy.last_key_state = key_states[1]        
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as g_socket:
     g_socket.connect((HOST, PORT))
