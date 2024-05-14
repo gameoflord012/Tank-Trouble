@@ -19,6 +19,7 @@ class Player(pygame.sprite.Sprite):
         self.last_fire = 0
         self.last_key_state = pygame.key.get_pressed()
         self.rotation_speed = 0
+        self.should_fire = False
 
     def update_key_state(self):
         key_state = self.last_key_state
@@ -37,7 +38,7 @@ class Player(pygame.sprite.Sprite):
             self.vel = vector(0, playerSpeed).rotate(-self.rot)
         if key_state[pygame.K_DOWN]:
             self.vel = vector(0, -playerSpeed/2).rotate(-self.rot)
-        if key_state[pygame.K_m]:
+        if key_state[pygame.K_m] or self.should_fire:
             now = pygame.time.get_ticks()
             if now - self.last_fire > bullet_rate:
                 self.last_fire = now
@@ -180,6 +181,7 @@ class Enemy(pygame.sprite.Sprite):
         self.last_fire = 0
         self.rotation_speed = 0
         self.last_key_state = pygame.key.get_pressed()
+        self.should_fire = False
 
     def update_key_state(self):
         key_state = self.last_key_state
@@ -198,7 +200,7 @@ class Enemy(pygame.sprite.Sprite):
             self.vel = vector(0, enemySpeed).rotate(-self.rot)
         if key_state[pygame.K_DOWN]:
             self.vel = vector(0, -enemySpeed/2).rotate(-self.rot)
-        if key_state[pygame.K_m]:
+        if key_state[pygame.K_m] or self.should_fire:
             now = pygame.time.get_ticks()
             if now - self.last_fire > bullet_rate:
                 self.last_fire = now
