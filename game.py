@@ -99,9 +99,12 @@ class Game:
         # send keys data to server
         new_key_state = pygame.key.get_pressed()
 
-        if(not arrays_equal(self.player.last_key_state, new_key_state)):
-            
-            key_states = [new_key_state, None]
+        global player_id
+
+        if  player_id == 0 and not arrays_equal(self.player.last_key_state, new_key_state) or \
+            player_id == 1 and not arrays_equal(self.enemy.last_key_state, new_key_state):
+
+            key_states = [new_key_state, None] 
             g_socket.send(pickle.dumps(key_states))
 
         self.all_sprites.update()
@@ -177,6 +180,13 @@ class Game:
 
 def handle_server():
     while True:
+        global player_id
+
+        
+        if player_id == -1:
+            g_socket.send(pickle.dumps([None, None]))
+            print("Waiting for player id")
+
         data = g_socket.recv(1024)
         if not data:
             print(f"Server closed")
@@ -187,24 +197,32 @@ def handle_server():
         except pickle.UnpicklingError:
             continue
     
-        print(f"Received from server")
+        if player_id == -1:
+            player_id = key_states[2]    
+            print(f"Player id: {player_id}")
+            continue
 
         # receive key states from server
+        if g_game == None:
+            continue
 
         if key_states[0] != None:
             g_game.player.last_key_state = key_states[0]
 
         if key_states[1] != None: 
-            g_game.enemy.last_key_state = key_states[1]        
+            g_game.enemy.last_key_state = key_states[1]
+
+        print(f"Received key states from server")
+
+player_id = -1
+g_game = None
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as g_socket:
     g_socket.connect((HOST, PORT))
 
     thread = threading.Thread(target=handle_server)
     thread.start()
-
-    global g_game
-
+    
     g_game = Game()
     g_game.new()
     g_game.run()

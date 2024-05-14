@@ -55,6 +55,8 @@ def handle_client(conn, addr):
         if(player_index == 1):
             key_states[0], key_states[1] = key_states[1], key_states[0]
 
+        key_states.append(player_index)
+
         # send back to sender 
         conn.sendall(pickle.dumps(key_states))
 
