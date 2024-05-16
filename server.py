@@ -14,7 +14,7 @@ def start_server():
     global g_socket
 
     g_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    g_socket.bind((HOST, PORT))
+    g_socket.bind(((HOST, PORT)))
     print("PVP tank server started \nBinding to port", PORT)
     g_socket.listen(2) 
     accept_players()
@@ -42,7 +42,7 @@ def handle_client(conn, addr):
     while True:
         try:
             byte_data = conn.recv(1024)
-            
+
             if not byte_data:
                 print(f"Connection {addr} closed")
                 g_socket.close()

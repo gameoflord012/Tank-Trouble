@@ -88,13 +88,16 @@ class Game:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = event.pos
                     if offline_button.collidepoint(mouse_pos):
-                        self.new()
+                        self.new_offline()
                         self.run()
+                        self.close_offline()
 
 
                     # CONNECT SERVER
                     elif online_button.collidepoint(mouse_pos):
-                        self.onlineScreen()
+                        self.new_online()
+                        self.run()
+                        self.close_online()
                         
                     elif exit_button.collidepoint(mouse_pos):
                         self.quit()
@@ -371,13 +374,6 @@ class Game:
             print(f"Received key states from server")
     
 g_game = Game()
+
 g_game.menu()
-
-g_game.new_offline()
-g_game.run()
-g_game.close_offline()
-
-g_game.new_online()
-g_game.run()
-g_game.close_online()
 
