@@ -8,8 +8,24 @@ import pickle
 
 from PrimarySettings import *
 from sprites import *
+from Button import *
 from os import path
+
 import random
+
+Screen = pygame.display.set_mode((WIDTH,HEIGHT))
+bgStart = pygame.image.load('imagefolder/bgS.png').convert_alpha()
+bgWin = pygame.image.load('imagefolder/bgWin.png').convert_alpha()
+
+btnStart = pygame.image.load('imagefolder/btnStart.png').convert_alpha()
+btnOffline = pygame.image.load('imagefolder/btnOffline.png').convert_alpha()
+btnExit = pygame.image.load('imagefolder/btnExit.png').convert_alpha()
+nameGame = pygame.image.load('imagefolder/nameGame.png').convert_alpha()
+cup = pygame.image.load('imagefolder/cup.png').convert_alpha()
+textWin = pygame.image.load('imagefolder/textWin.png').convert_alpha()
+
+btnSoundOn = pygame.image.load('imagefolder/sound-on.png').convert_alpha()
+btnSoundOff = pygame.image.load('imagefolder/sound-off.png').convert_alpha()
 
 class Game:
     def __init__(self):
@@ -49,6 +65,96 @@ class Game:
                 self.image_loading_of_explosion.set_colorkey(BLACK)
                 self.image = pygame.transform.scale(self.image_loading_of_explosion, (50, 50))
                 self.explosion_list.append(self.image)
+
+    # important!
+    def menu(self):
+        # Initialize buttons
+        bgS = pygame.transform.scale(bgStart, (WIDTH, HEIGHT))
+        button_width = btnStart.get_width()
+        button_height = btnStart.get_height()
+        online_button = pygame.Rect(WIDTH / 2 - button_width / 2, HEIGHT / 2 - button_height / 2, button_width, button_height)
+        offline_button = pygame.Rect(WIDTH / 2 - button_width / 2, HEIGHT / 2 + button_height, button_width, button_height)
+        exit_button = pygame.Rect(WIDTH / 2 - button_width / 2, HEIGHT / 2 + button_height * 2.5  , button_width, button_height)
+        sound_button = pygame.Rect(0, 0, btnSoundOn.get_width(), btnSoundOn.get_height())
+        
+        running = True
+        while running:
+            self.screen.blit(bgS, (0, 0))  # Draw the background image first
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = event.pos
+                    if offline_button.collidepoint(mouse_pos):
+                        self.new()
+                        self.run()
+
+
+                    # CONNECT SERVER
+                    elif online_button.collidepoint(mouse_pos):
+                        self.onlineScreen()
+                        
+                    elif exit_button.collidepoint(mouse_pos):
+                        self.quit()
+                    elif sound_button.collidepoint(mouse_pos):
+                        self.sound_on = not self.sound_on
+                        if self.sound_on:
+                            pygame.mixer.music.play(-1)  # Phát nhạc lặp lại
+                        else:
+                            pygame.mixer.music.stop()
+                    
+            # Draw the title image
+            title_rect = nameGame.get_rect(center=(WIDTH / 2, HEIGHT / 8))
+            self.screen.blit(nameGame, title_rect)
+            
+            # Draw button images
+            self.screen.blit(btnStart, online_button.topleft)
+            self.screen.blit(btnOffline, offline_button.topleft)
+            self.screen.blit(btnExit, exit_button.topleft)
+            
+
+                
+            pygame.display.flip()  # Update display
+
+        self.quit()
+
+    # ONLINE MODE
+    def onlineScreen(self):
+        scaler_bg = pygame.transform.scale(bgStart, (WIDTH, HEIGHT))
+        self.screen.blit(scaler_bg, (0, 0))
+        
+        name_game = Button(100, 30, nameGame)
+        name_game.draw()
+        
+        # Tạo nút "btnStart"
+        btn_start = Button(450, 300, btnStart)
+        btn_start.draw()
+        
+        btn_exit = Button(470, 450, btnExit)
+        btn_exit.draw()
+        
+        pygame.display.flip()
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.quit()
+                if event.type == pygame.KEYUP:
+                    self.Score = False
+                    break  
+                    
+            # Kiểm tra xem nút đã được nhấn chưa
+            if btn_start.draw():
+                g_socket.connect((HOST, PORT))
+                print(f"Connect server success!")
+                self.newOnline()
+                
+            elif btn_exit.draw():
+                self.menu()
+                
+            pygame.display.flip()
 
     def new_common(self):
         self.all_sprites = pygame.sprite.Group()
@@ -265,6 +371,7 @@ class Game:
             print(f"Received key states from server")
     
 g_game = Game()
+g_game.menu()
 
 g_game.new_offline()
 g_game.run()
@@ -273,5 +380,4 @@ g_game.close_offline()
 g_game.new_online()
 g_game.run()
 g_game.close_online()
-
 
