@@ -1,4 +1,4 @@
-HOST = '192.168.1.8'  # Replace with server's hostname or IP address
+HOST = '192.168.1.5'  # Replace with server's hostname or IP address
 PORT = 65432
 
 import socket
@@ -95,9 +95,11 @@ class Game:
 
                     # CONNECT SERVER
                     elif online_button.collidepoint(mouse_pos):
-                        self.new_online()
-                        self.run()
-                        self.close_online()
+                        if self.new_online():
+                            self.run()
+                            self.close_online()
+                        else:
+                            print("Server dau thang lol")
                         
                     elif exit_button.collidepoint(mouse_pos):
                         self.quit()
@@ -160,6 +162,21 @@ class Game:
             pygame.display.flip()
 
     def new_common(self):
+        try:
+            self.all_sprites.empty()
+        except:
+            pass
+
+        try:
+            self.walls.empty()
+        except:
+            pass
+
+        try:
+            self.bullets.empty()
+        except:
+            pass
+        
         self.all_sprites = pygame.sprite.Group()
         self.walls = pygame.sprite.Group()  # created the walls group to hold them all
         self.bullets = pygame.sprite.Group()
@@ -172,11 +189,14 @@ class Game:
                 if tile == '-':
                     self.enemy = Enemy(self, col, row)
 
-    def new_online(self):
+    def new_online(self) -> bool:
+        try:
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket.connect((HOST, PORT))
+        except:
+            return False
+        
         self.new_common()
-
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.connect((HOST, PORT))
 
         self.is_online = True
         self.player_id = -1
@@ -184,6 +204,8 @@ class Game:
 
         self.online_thread = threading.Thread(target=self.handle_server)
         self.online_thread.start()
+
+        return True
 
     def close_online(self):
         self.all_sprites.empty()
@@ -213,6 +235,10 @@ class Game:
                 if event.type == pygame.QUIT:
                     self.playing = False
                     break
+
+                if event.type == pygame.KEYDOWN:
+                    if pygame.key.get_pressed()[pygame.K_ESCAPE]:
+                        self.playing = False
 
             self.changing_time = self.clock.tick(FPS) / 1000  # shows how long the previous frame took
             self.events()
@@ -267,10 +293,12 @@ class Game:
                 self.SCORE1 += 1
                 self.data()
                 
-                self.playing = False
+                self.new_common()
 
                 if self.SCORE1 == 5:
-                    self.show_go_screen1()
+                    self.show_go_screen1() 
+                    self.playing = False
+
         self.hits2 = pygame.sprite.spritecollide(self.enemy, self.bullets, True, collide)
         for hit in self.hits2:
             if hit:
@@ -278,13 +306,13 @@ class Game:
                 self.explosion_sound.play()
                 self.enemy.kill()
                 self.SCORE2 += 1
-                self.playing = False
                 self.data()
-                
-                self.playing = False
+
+                self.new_common()
                 
                 if self.SCORE2 == 5:
                     self.show_go_screen2()
+                    self.playing = False
 
     def draw(self):
         # flip all the thing to screen
@@ -378,4 +406,3 @@ class Game:
 g_game = Game()
 
 g_game.menu()
-
