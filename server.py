@@ -8,7 +8,7 @@ PORT = 65432
 MAX_PLAYERS = 2
 
 threads = []
-clients_cnn = []
+clients_cnn = [None, None]
 
 def start_server():
     global g_socket
@@ -24,7 +24,7 @@ def accept_players():
 
     for i in range(MAX_PLAYERS):
         conn, addr = g_socket.accept()
-        clients_cnn.append(conn)
+        clients_cnn[i] = conn
         print(f'You are player {addr}')
 
         # create connection handle thread for each client
@@ -37,10 +37,17 @@ def accept_players():
         thread.join()
 
 def handle_client(conn, addr):
+    conn_index = clients_cnn.index(conn)
+
     while True:
-        byte_data = conn.recv(1024)
-        if not byte_data:
-            print(f"Connection {addr} closed")
+        try:
+            byte_data = conn.recv(1024)
+            
+            if not byte_data:
+                print(f"Connection {addr} closed")
+                g_socket.close()
+        except:
+            g_socket.close()
             break
 
         try:
@@ -51,13 +58,11 @@ def handle_client(conn, addr):
         
         print(f"Data received from {addr}")
 
-        player_index = clients_cnn.index(conn)
-
         # send self
-        conn.sendall(pickle.dumps([player_index, None, None, None])) # need modify
+        conn.sendall(pickle.dumps([conn_index, None, None, None])) # need modify
 
         # send to other player
-        if(len(clients_cnn) == 2):
-            clients_cnn[1 - player_index].sendall(pickle.dumps([1 - player_index, data[0], data[1], data[2]])) # need modify
+        if(clients_cnn[1 - conn_index] != None):
+            clients_cnn[1 - conn_index].sendall(pickle.dumps([1 - conn_index, data[0], data[1], data[2]])) # need modify
 
 start_server()

@@ -1,4 +1,4 @@
-HOST = '192.168.1.13'  # Replace with server's hostname or IP address
+HOST = '192.168.1.8'  # Replace with server's hostname or IP address
 PORT = 65432
 
 import socket
@@ -21,6 +21,7 @@ class Game:
         self.SCORE1 = 0
         self.SCORE2 = 0
         self.data()
+        self.is_online = None
 
     def data(self):
             folder_of_game = path.dirname(__file__)  # location of main.py
@@ -49,8 +50,7 @@ class Game:
                 self.image = pygame.transform.scale(self.image_loading_of_explosion, (50, 50))
                 self.explosion_list.append(self.image)
 
-    def new(self):
-        # initializing all variables and setup them for a new game
+    def new_common(self):
         self.all_sprites = pygame.sprite.Group()
         self.walls = pygame.sprite.Group()  # created the walls group to hold them all
         self.bullets = pygame.sprite.Group()
@@ -63,10 +63,48 @@ class Game:
                 if tile == '-':
                     self.enemy = Enemy(self, col, row)
 
+    def new_online(self):
+        self.new_common()
+
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.connect((HOST, PORT))
+
+        self.is_online = True
+        self.player_id = -1
+        self.closing_online = False
+
+        self.online_thread = threading.Thread(target=self.handle_server)
+        self.online_thread.start()
+
+    def close_online(self):
+        self.all_sprites.empty()
+        self.walls.empty()
+        self.bullets.empty()
+
+        self.socket.close()
+        self.closing_online = True
+        self.is_online = False
+        self.online_thread.join()
+
+    def new_offline(self):
+        self.is_online = False
+        self.new_common()
+
+    def close_offline(self):
+        self.all_sprites.empty()
+        self.walls.empty()
+        self.bullets.empty()
+
     def run(self):
         self.playing = True
         self.Score = False
+
         while self.playing:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.playing = False
+                    break
+
             self.changing_time = self.clock.tick(FPS) / 1000  # shows how long the previous frame took
             self.events()
             self.update()
@@ -88,19 +126,23 @@ class Game:
 
     def update(self):
 
-        # send keys data to server
         new_key_state = pygame.key.get_pressed()
 
-        global player_id
+        if self.is_online:
+            # send keys data to server
+            if self.player_id == 0:
+                self.player.last_key_state = new_key_state
+                self.socket.sendall(pickle.dumps([self.player.position, self.player.rot, new_key_state[pygame.K_m]]))
 
-        if player_id == 0:
+
+            if self.player_id == 1:
+                self.enemy.last_key_state = new_key_state
+                self.socket.sendall(pickle.dumps([self.enemy.position, self.enemy.rot, new_key_state[pygame.K_m]]))
+
+        else:
+
             self.player.last_key_state = new_key_state
-            g_socket.sendall(pickle.dumps([self.player.position, self.player.rot, new_key_state[pygame.K_m]]))
-
-
-        if player_id == 1:
             self.enemy.last_key_state = new_key_state
-            g_socket.sendall(pickle.dumps([self.enemy.position, self.enemy.rot, new_key_state[pygame.K_m]]))
 
         self.all_sprites.update()
         self.hit()
@@ -173,64 +215,63 @@ class Game:
                     self.Score = True
                     waiting = False
 
-def handle_server():
-    while True:
-        global player_id
+    def handle_server(self):
+        while not self.closing_online:
+            if self.player_id == -1:
+                self.socket.send(pickle.dumps([None, None, None])) # need modify
+                print("Waiting for player id")
 
-        if player_id == -1:
-            g_socket.send(pickle.dumps([None, None, None])) # need modify
-            print("Waiting for player id")
+            try:
+                byte_data = self.socket.recv(1024)
+                if not byte_data:
+                    print(f"Online session closed")
+                    break
+            except:
+                print(f"Online session closed")
+                break
 
-        byte_data = g_socket.recv(1024)
-        if not byte_data:
-            print(f"Server closed")
-            break
-
-        try:
-            data = pickle.loads(byte_data)
-        except pickle.UnpicklingError:
-            continue
-    
-        if player_id == -1:
-            player_id = data[0] 
-            print(f"Player id: {player_id}")
-            continue
-
-        # do nothing if game is not initialized
-        if g_game == None:
-            continue
-
-        if player_id == 0:
-            if data[1] != None:
-                g_game.enemy.position = data[1]
-            if data[2] != None:
-                g_game.enemy.rot = data[2]
-            if data[3] != None:
-                g_game.enemy.should_fire = data[3]
-
+            try:
+                data = pickle.loads(byte_data)
+            except pickle.UnpicklingError:
+                continue
         
-        if player_id == 1:
-            if data[1] != None:
-                g_game.player.position = data[1]
-            if data[2] != None:
-                g_game.player.rot = data[2]
-            if data[3] != None:
-                g_game.player.should_fire = data[3]
+            if self.player_id == -1:
+                self.player_id = data[0] 
+                print(f"Player id: {self.player_id}")
+                continue
+
+            # do nothing if game is not initialized
+            if g_game == None:
+                continue
+
+            if self.player_id == 0:
+                if data[1] != None:
+                    g_game.enemy.position = data[1]
+                if data[2] != None:
+                    g_game.enemy.rot = data[2]
+                if data[3] != None:
+                    g_game.enemy.should_fire = data[3]
+
+            
+            if self.player_id == 1:
+                if data[1] != None:
+                    g_game.player.position = data[1]
+                if data[2] != None:
+                    g_game.player.rot = data[2]
+                if data[3] != None:
+                    g_game.player.should_fire = data[3]
 
 
-        print(f"Received key states from server")
-
-player_id = -1
-g_game = None
-
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as g_socket:
-    g_socket.connect((HOST, PORT))
-
-    thread = threading.Thread(target=handle_server)
-    thread.start()
+            print(f"Received key states from server")
     
-    g_game = Game()
-    g_game.new()
-    g_game.run()
+g_game = Game()
+
+g_game.new_offline()
+g_game.run()
+g_game.close_offline()
+
+g_game.new_online()
+g_game.run()
+g_game.close_online()
 
 

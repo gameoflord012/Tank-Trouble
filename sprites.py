@@ -192,17 +192,32 @@ class Enemy(pygame.sprite.Sprite):
 
         if len(key_state) == 0:
             return
+        
+        if  self.game.is_online and key_state[pygame.K_LEFT] or \
+            not self.game.is_online and key_state[pygame.K_a]:
 
-        if key_state[pygame.K_LEFT]:
             self.rotation_speed = +RotationSpeedOfEnemy
-        if key_state[pygame.K_RIGHT]:
+
+        if  self.game.is_online and key_state[pygame.K_RIGHT] or \
+            not self.game.is_online and key_state[pygame.K_d]:
+
             self.rotation_speed = -RotationSpeedOfEnemy
-        if key_state[pygame.K_UP]:
+            
+        if  self.game.is_online and key_state[pygame.K_UP] or \
+            not self.game.is_online and key_state[pygame.K_w]:
+            
             self.vel = vector(0, enemySpeed).rotate(-self.rot)
-        if key_state[pygame.K_DOWN]:
+
+        if  self.game.is_online and key_state[pygame.K_DOWN] or \
+            not self.game.is_online and key_state[pygame.K_s]:
+
             self.vel = vector(0, -enemySpeed/2).rotate(-self.rot)
-        if key_state[pygame.K_m] or self.should_fire:
+
+        if  self.game.is_online and (key_state[pygame.K_m] or self.should_fire) or\
+            not self.game.is_online and key_state[pygame.K_q]:
+        
             now = pygame.time.get_ticks()
+        
             if now - self.last_fire > bullet_rate:
                 self.last_fire = now
                 direction = vector(0, 1).rotate(-self.rot)
