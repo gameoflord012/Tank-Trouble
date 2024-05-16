@@ -265,10 +265,10 @@ class Game:
                 self.explosion_sound.play()
                 self.player.kill()
                 self.SCORE1 += 1
+                self.data()
+                
                 self.playing = False
 
-                self.data()
-                self.new()
                 if self.SCORE1 == 5:
                     self.show_go_screen1()
         self.hits2 = pygame.sprite.spritecollide(self.enemy, self.bullets, True, collide)
@@ -280,7 +280,9 @@ class Game:
                 self.SCORE2 += 1
                 self.playing = False
                 self.data()
-                self.new()
+                
+                self.playing = False
+                
                 if self.SCORE2 == 5:
                     self.show_go_screen2()
 
