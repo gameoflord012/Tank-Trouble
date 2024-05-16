@@ -267,12 +267,18 @@ class Game:
             # send keys data to server
             if self.player_id == 0:
                 self.player.last_key_state = new_key_state
-                self.socket.sendall(pickle.dumps([self.player.position, self.player.rot, new_key_state[pygame.K_m]]))
+                try:
+                    self.socket.sendall(pickle.dumps([self.player.position, self.player.rot, new_key_state[pygame.K_m]]))
+                except:
+                    self.running = False
 
 
             if self.player_id == 1:
                 self.enemy.last_key_state = new_key_state
-                self.socket.sendall(pickle.dumps([self.enemy.position, self.enemy.rot, new_key_state[pygame.K_m]]))
+                try:
+                    self.socket.sendall(pickle.dumps([self.enemy.position, self.enemy.rot, new_key_state[pygame.K_m]]))
+                except:
+                    self.running = False
 
         else:
 
